@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # traccar:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.of.alpine
+  #   container_name: traccar_server
+  #   restart: always
+  #   depends_on:
+  #     - db
+  #   environment:
+  #     - DATABASE_DRIVER=com.mysql.cj.jdbc.Driver
+  #     - DATABASE_URL=jdbc:mysql://db:3306/traccar?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
+  #     - DATABASE_USER=user
+  #     - DATABASE_PASSWORD=root_pass
+  #   ports:
+  #     - "8012:8082"
+
+  traccar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: traccar_server
+    restart: always
+    depends_on:
+      - db
+    environment:
+      - DATABASE_DRIVER=com.mysql.cj.jdbc.Driver
+      - DATABASE_URL=jdbc:mysql://db:3306/traccar?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=UTC
+      - DATABASE_USER=traccar_user
+      - DATABASE_PASSWORD=traccar_password
+    ports:
+      - "8012:8082"
+    # volumes:
+    #   - ./traccar/logs:/opt/traccar/logs
+    #   - ./traccar/conf:/opt/traccar/conf
+
+  db:
+    image: mysql:8.0
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_DATABASE: traccar
+      MYSQL_USER: user
+      MYSQL_PASSWORD: root_pass
+      TZ: Asia/Bangkok 
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    restart: always
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: root_pass
+      PHP_UPLOAD_MAX_FILESIZE: 1G
+      PHP_MAX_INPUT_VARS: 1G
+    ports:
+      - "8010:80"
+
+volumes:
+  mysql_data:
